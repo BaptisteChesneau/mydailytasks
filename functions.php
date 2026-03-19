@@ -99,7 +99,7 @@ function get_task_by_id(int $task_id): array|false
 /**
  * Inserts a new task into the database.
  *
- * @param string $name     Task name (max 255 characters).
+ * @param string $name     Task name (max 30 characters).
  * @param int    $duration Duration in minutes (multiple of TASK_DURATION_STEP).
  * @param string $date     Date in 'Y-m-d' format.
  * @return bool            true if insertion succeeded, false otherwise.
@@ -205,10 +205,10 @@ function delete_task(int $task_id): bool
  * Sanitizes a user-submitted string.
  *
  * @param string $input   Raw form field value.
- * @param int    $max_len Maximum allowed length.
+ * @param int    $max_len Maximum allowed length (defaults to 30).
  * @return string         Cleaned and truncated string.
  */
-function sanitize_string(string $input, int $max_len = 255): string
+function sanitize_string(string $input, int $max_len = 30): string
 {
     $clean = trim($input);
     $clean = strip_tags($clean);
