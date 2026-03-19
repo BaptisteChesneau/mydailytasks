@@ -1,21 +1,21 @@
 <?php
 /**
- * edit_task.php — Création et modification d'une tâche
+ * edit_task.php — Task creation and editing screen
  *
- * Comportement :
- *  - Sans paramètre GET  → formulaire de CRÉATION d'une nouvelle tâche.
- *  - Avec GET ?id=N      → formulaire de MODIFICATION de la tâche N.
+ * Behaviour:
+ *  - No GET parameter  → CREATE a new task.
+ *  - GET ?id=N         → EDIT existing task N.
  *
- * Le traitement du formulaire (POST) est géré dans ce même fichier
- * (pattern PRG : Post / Redirect / Get) pour éviter la re-soumission.
+ * Form processing (POST) is handled in this same file
+ * using the PRG pattern (Post / Redirect / Get) to prevent re-submission.
  */
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
-// ── Détermination du mode : création ou modification ─────────
-$edit_mode = false;   // true = modification, false = création
-$task      = null;    // données de la tâche existante (mode modification)
+// ── Determine mode: create or edit ───────────────────────────
+$edit_mode = false;   // true = edit mode, false = create mode
+$task      = null;    // existing task data (edit mode only)
 $task_id   = 0;
 
 if (isset($_GET['id']) && ctype_digit($_GET['id'])) {
@@ -28,7 +28,7 @@ if (isset($_GET['id']) && ctype_digit($_GET['id'])) {
     }
 
     if ($task === false) {
-        // Tâche introuvable : on redirige vers l'accueil
+        // Task not found: redirect to dashboard
         header('Location: index.php');
         exit;
     }
@@ -36,40 +36,40 @@ if (isset($_GET['id']) && ctype_digit($_GET['id'])) {
     $edit_mode = true;
 }
 
-// ── Valeurs initiales du formulaire ─────────────────────────
-// En modification, on pré-remplit avec les données existantes.
-// En création, on utilise des valeurs par défaut.
+// ── Initial form values ──────────────────────────────────────
+// In edit mode, pre-fill with existing data.
+// In create mode, use default values.
 $form = [
-    'name'     => $edit_mode ? $task['name']     : '',
+    'name'     => $edit_mode ? $task['name']          : '',
     'duration' => $edit_mode ? (int) $task['duration'] : TASK_DURATION_MIN,
-    'date'     => $edit_mode ? $task['date']     : date(DATE_FORMAT_DB),
+    'date'     => $edit_mode ? $task['date']           : date(DATE_FORMAT_DB),
 ];
 
-// ── Gestion du formulaire (méthode POST) ─────────────────────
+// ── Form processing (POST) ───────────────────────────────────
 $errors        = [];
 $flash_message = '';
 $flash_type    = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // — 1. Nettoyage des entrées —
+    // — 1. Sanitize inputs —
     $input_name     = sanitize_string($_POST['name']     ?? '');
     $input_duration = $_POST['duration'] ?? '';
     $input_date     = trim($_POST['date'] ?? '');
 
-    // Conservation des valeurs saisies pour re-affichage en cas d'erreur
+    // Keep submitted values for re-display on validation error
     $form['name']     = $input_name;
     $form['duration'] = $input_duration;
     $form['date']     = $input_date;
 
-    // — 2. Validation —
+    // — 2. Validate inputs —
 
-    // Nom : obligatoire, 2 caractères minimum
+    // Name: required, minimum 2 characters
     if (mb_strlen($input_name) < 2) {
         $errors['name'] = 'Le nom de la tâche doit comporter au moins 2 caractères.';
     }
 
-    // Durée : doit être un entier valide et multiple de TASK_DURATION_STEP
+    // Duration: must be a valid integer and a multiple of TASK_DURATION_STEP
     if (!validate_duration($input_duration)) {
         $errors['duration'] = sprintf(
             'La durée doit être un multiple de %d min, entre %d et %d min.',
@@ -79,29 +79,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
     }
 
-    // Date : format Y-m-d requis
+    // Date: Y-m-d format required
     if (!validate_date($input_date)) {
         $errors['date'] = 'La date saisie est invalide.';
     }
 
-    // — 3. Persistance si aucune erreur —
+    // — 3. Persist if no errors —
     if (empty($errors)) {
         $duration_int = (int) $input_duration;
 
         try {
             if ($edit_mode) {
-                // Modification de la tâche existante
+                // Update the existing task
                 edit_task($task_id, [
                     'name'     => $input_name,
                     'duration' => $duration_int,
                     'date'     => $input_date,
                 ]);
             } else {
-                // Création d'une nouvelle tâche
+                // Insert a new task
                 create_task($input_name, $duration_int, $input_date);
             }
 
-            // Pattern PRG : redirection après succès pour éviter la re-soumission
+            // PRG pattern: redirect after success to prevent form re-submission
             header('Location: index.php?success=' . ($edit_mode ? 'edited' : 'created'));
             exit;
 
@@ -112,12 +112,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// ── Construction de la liste des durées disponibles ──────────
-// Génère les options <select> de TASK_DURATION_MIN à TASK_DURATION_MAX
-// par pas de TASK_DURATION_STEP.
+// ── Build list of available durations ────────────────────────
+// Generates <select> options from TASK_DURATION_MIN to TASK_DURATION_MAX
+// in steps of TASK_DURATION_STEP.
 $duration_options = range(TASK_DURATION_MIN, TASK_DURATION_MAX, TASK_DURATION_STEP);
 
-// ── Titre de la page selon le mode ───────────────────────────
+// ── Page title based on mode ──────────────────────────────────
 $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
 ?>
 <!DOCTYPE html>
@@ -133,7 +133,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
 
 <div class="app-wrapper">
 
-    <!-- ── En-tête ─────────────────────────────────────────── -->
+    <!-- ── Header ──────────────────────────────────────────── -->
     <header class="app-header" role="banner">
         <h1 class="app-logo">my<span>Daily</span>Tasks</h1>
         <a href="index.php" class="btn btn--ghost">← Retour au tableau de bord</a>
@@ -147,22 +147,22 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
             </h2>
 
             <?php if ($flash_message): ?>
-            <!-- Message d'erreur de base de données -->
+            <!-- Database error message -->
             <div class="alert alert--<?= $flash_type ?>" role="alert">
                 <?= $flash_message ?>
             </div>
             <?php endif; ?>
 
             <!--
-                Formulaire de création / modification
-                Action : ce même fichier (edit_task.php)
-                Méthode : POST (les données ne transitent pas dans l'URL)
+                Create / edit form
+                Action : this same file (edit_task.php)
+                Method : POST (data does not appear in the URL)
             -->
             <form method="POST"
                   action="<?= $edit_mode ? 'edit_task.php?id=' . $task_id : 'edit_task.php' ?>"
                   novalidate>
 
-                <!-- Champ : nom de la tâche -->
+                <!-- Field: task name -->
                 <div class="form-group">
                     <label class="form-label" for="name">Nom de la tâche</label>
                     <input
@@ -183,7 +183,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
                     <?php endif; ?>
                 </div>
 
-                <!-- Champ : durée (liste déroulante, multiples de 10 min) -->
+                <!-- Field: duration (dropdown, multiples of 10 min) -->
                 <div class="form-group">
                     <label class="form-label" for="duration">Durée</label>
                     <select
@@ -198,7 +198,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
                             value="<?= $opt ?>"
                             <?= (int) $form['duration'] === $opt ? 'selected' : '' ?>>
                             <?php
-                            // Formatage lisible : "30 min" ou "1h 30min"
+                            // Human-readable format: "30 min" or "1h 30min"
                             $h = intdiv($opt, 60);
                             $m = $opt % 60;
                             if ($h > 0) {
@@ -217,7 +217,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
                     <?php endif; ?>
                 </div>
 
-                <!-- Champ : date (par défaut = aujourd'hui) -->
+                <!-- Field: date (defaults to today) -->
                 <div class="form-group">
                     <label class="form-label" for="date">Date</label>
                     <input
@@ -236,7 +236,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
                     <?php endif; ?>
                 </div>
 
-                <!-- Boutons d'action -->
+                <!-- Action buttons -->
                 <div class="form-actions">
                     <button type="submit" class="btn btn--primary">
                         <?= $edit_mode ? '💾 Enregistrer les modifications' : '✅ Créer la tâche' ?>

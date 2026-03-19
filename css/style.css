@@ -1,7 +1,7 @@
 /* ============================================================
-   style.css — Feuille de styles de myDailyTasks
-   Police : "DM Sans" (corps) + "Syne" (titres)
-   Palette : fond ardoise foncé, accents ambre chaud
+   style.css — Stylesheet for myDailyTasks
+   Fonts  : "DM Sans" (body) + "Syne" (headings)
+   Palette: dark slate background, warm amber accents
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
@@ -75,7 +75,7 @@ body {
     font-weight: 500;
 }
 
-/* ── Cartes de statistiques ─────────────────────────────── */
+/* ── Statistics cards ───────────────────────────────────── */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -115,7 +115,7 @@ body {
     margin-top: .25rem;
 }
 
-/* ── Section chart ──────────────────────────────────────── */
+/* ── Chart section ──────────────────────────────────────── */
 .chart-section {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -147,7 +147,7 @@ body {
     text-align: center;
 }
 
-/* ── Section tableau des tâches ─────────────────────────── */
+/* ── Tasks table section ────────────────────────────────── */
 .tasks-section {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -165,7 +165,7 @@ body {
     margin-bottom: 1.25rem;
 }
 
-/* ── Tableau HTML ───────────────────────────────────────── */
+/* ── HTML table ─────────────────────────────────────────── */
 .tasks-table {
     width: 100%;
     border-collapse: collapse;
@@ -212,7 +212,7 @@ body {
 
 .actions { white-space: nowrap; }
 
-/* ── Boutons ─────────────────────────────────────────────── */
+/* ── Buttons ─────────────────────────────────────────────── */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -254,7 +254,7 @@ body {
 
 .btn--sm { padding: .35rem .75rem; font-size: .78rem; }
 
-/* ── Formulaires ─────────────────────────────────────────── */
+/* ── Forms ───────────────────────────────────────────────── */
 .form-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -320,7 +320,7 @@ select.form-control {
     flex-wrap: wrap;
 }
 
-/* ── Messages d'alerte ──────────────────────────────────── */
+/* ── Alert messages ─────────────────────────────────────── */
 .alert {
     padding: .85rem 1.1rem;
     border-radius: var(--radius-sm);

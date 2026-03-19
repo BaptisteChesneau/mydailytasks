@@ -1,19 +1,19 @@
 <?php
 /**
- * index.php — Tableau de bord de myDailyTasks
+ * index.php — Dashboard for myDailyTasks
  *
- * Fonctionnalités :
- *  - Affiche les statistiques du jour (nombre de tâches, temps total)
- *  - Génère un graphique Doughnut avec Chart.js
- *  - Liste toutes les tâches du jour (tri récent → ancien)
- *  - Permet la suppression d'une tâche (via lien GET sécurisé)
- *  - Lien vers la création et la modification d'une tâche
+ * Features:
+ *  - Displays today's statistics (task count, total time)
+ *  - Generates a Doughnut chart using Chart.js
+ *  - Lists all tasks for today (newest to oldest)
+ *  - Allows task deletion via a secure GET link
+ *  - Links to task creation and editing screens
  */
 
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
-// ── Suppression d'une tâche ──────────────────────────────────
+// ── Task deletion ────────────────────────────────────────────
 $flash_message = '';
 $flash_type    = '';
 
@@ -34,9 +34,9 @@ if (isset($_GET['delete']) && ctype_digit($_GET['delete'])) {
     }
 }
 
-// ── Récupération des tâches du jour ─────────────────────────
-$today = date(DATE_FORMAT_DB);                    // ex. "2025-03-19"
-$today_display = date(DATE_FORMAT_DISPLAY);       // ex. "19/03/2025"
+// ── Fetch today's tasks ──────────────────────────────────────
+$today         = date(DATE_FORMAT_DB);       // e.g. "2026-03-19"
+$today_display = date(DATE_FORMAT_DISPLAY);  // e.g. "19/03/2026"
 
 try {
     $tasks = get_tasks_list($today);
@@ -46,19 +46,19 @@ try {
     $flash_type    = 'error';
 }
 
-// ── Calcul des statistiques ──────────────────────────────────
+// ── Compute statistics ───────────────────────────────────────
 $task_count    = count($tasks);
 $total_minutes = array_sum(array_column($tasks, 'duration'));
 $total_hours   = floor($total_minutes / 60);
 $remain_min    = $total_minutes % 60;
 
-// Formatage du temps total pour l'affichage
+// Format total time for display
 $total_time_display = $total_hours > 0
     ? "{$total_hours}h" . ($remain_min > 0 ? " {$remain_min}min" : '')
     : "{$total_minutes}min";
 
-// ── Préparation des données pour Chart.js ────────────────────
-// Labels et données passés en JSON pour éviter toute injection
+// ── Prepare data for Chart.js ────────────────────────────────
+// Labels and data encoded as JSON to prevent XSS injection
 $chart_labels = json_encode(array_column($tasks, 'name'));
 $chart_data   = json_encode(array_column($tasks, 'duration'));
 ?>
@@ -75,7 +75,7 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
 
 <div class="app-wrapper">
 
-    <!-- ── En-tête ─────────────────────────────────────────── -->
+    <!-- ── Header ──────────────────────────────────────────── -->
     <header class="app-header" role="banner">
         <h1 class="app-logo">my<span>Daily</span>Tasks</h1>
         <p class="app-date">
@@ -86,13 +86,13 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
     <main id="main-content">
 
         <?php if ($flash_message): ?>
-        <!-- Message flash (succès / erreur) -->
+        <!-- Flash message (success / error) -->
         <div class="alert alert--<?= $flash_type ?>" role="alert">
             <?= $flash_message ?>
         </div>
         <?php endif; ?>
 
-        <!-- ── Statistiques ────────────────────────────────── -->
+        <!-- ── Statistics ──────────────────────────────────── -->
         <section aria-label="Statistiques du jour">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -108,7 +108,7 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
             </div>
         </section>
 
-        <!-- ── Graphique Doughnut ───────────────────────────── -->
+        <!-- ── Doughnut chart ───────────────────────────────── -->
         <section class="chart-section" aria-label="Répartition visuelle des tâches">
             <h2 class="section-title">Répartition du temps</h2>
             <?php if ($task_count > 0): ?>
@@ -120,7 +120,7 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
             <?php endif; ?>
         </section>
 
-        <!-- ── Liste des tâches ─────────────────────────────── -->
+        <!-- ── Task list ────────────────────────────────────── -->
         <section class="tasks-section" aria-label="Liste des tâches du jour">
             <div class="tasks-header">
                 <h2 class="section-title" style="margin-bottom:0">Tâches du jour</h2>
@@ -156,13 +156,13 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
                             </span>
                         </td>
                         <td class="actions">
-                            <!-- Modifier -->
+                            <!-- Edit button -->
                             <a href="edit_task.php?id=<?= (int) $task['task_id'] ?>"
                                class="btn btn--ghost btn--sm"
                                aria-label="Modifier la tâche <?= htmlspecialchars($task['name'], ENT_QUOTES, 'UTF-8') ?>">
                                 ✏️ Modifier
                             </a>
-                            <!-- Supprimer (confirmation JS) -->
+                            <!-- Delete button (JS confirmation) -->
                             <a href="index.php?delete=<?= (int) $task['task_id'] ?>"
                                class="btn btn--danger btn--sm"
                                aria-label="Supprimer la tâche <?= htmlspecialchars($task['name'], ENT_QUOTES, 'UTF-8') ?>"
@@ -190,24 +190,24 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
 </div><!-- /.app-wrapper -->
 
 <?php if ($task_count > 0): ?>
-<!-- Chart.js — Graphique Doughnut généré dynamiquement -->
+<!-- Chart.js — Dynamically generated Doughnut chart -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
 (function () {
     'use strict';
 
-    // Données injectées depuis PHP (échappement JSON natif)
-    const labels   = <?= $chart_labels ?>;
+    // Data injected from PHP (native JSON encoding prevents XSS)
+    const labels    = <?= $chart_labels ?>;
     const durations = <?= $chart_data ?>;
 
-    // Palette de couleurs pour les segments
+    // Color palette for chart segments
     const colors = [
         '#f5a623', '#4c9fff', '#4caf7d', '#e05c5c',
         '#a78bfa', '#fb7185', '#34d399', '#60a5fa',
         '#fbbf24', '#f472b6'
     ];
 
-    // Attribution cyclique si plus de tâches que de couleurs
+    // Assign colors cyclically if more tasks than colors
     const bgColors = labels.map((_, i) => colors[i % colors.length]);
 
     const ctx = document.getElementById('taskChart');
@@ -240,8 +240,8 @@ $chart_data   = json_encode(array_column($tasks, 'duration'));
                 tooltip: {
                     callbacks: {
                         /**
-                         * Affiche la durée en minutes dans l'infobulle.
-                         * @param {object} context - Contexte Chart.js
+                         * Displays the duration in minutes in the tooltip.
+                         * @param {object} context - Chart.js context
                          * @returns {string}
                          */
                         label: function (context) {

@@ -1,18 +1,18 @@
 -- ============================================================
--- myDailyTasks - Fichier d'initialisation de la base de données
--- Crée la BDD "timetracking" et la table "tasks" si elles
--- n'existent pas déjà.
+-- myDailyTasks - Database initialization file
+-- Creates the “timetracking” database and the “tasks” table if they
+-- do not already exist.
 -- ============================================================
 
--- Création de la base de données
+-- Creating the database
 CREATE DATABASE IF NOT EXISTS `timetracking`
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
--- Sélection de la base de données
+-- Selecting the database
 USE `timetracking`;
 
--- Création de la table des tâches
+-- Creating the task table
 CREATE TABLE IF NOT EXISTS `tasks` (
     `task_id`   INT UNSIGNED    NOT NULL AUTO_INCREMENT COMMENT 'Identifiant unique de la tâche',
     `name`      VARCHAR(255)    NOT NULL                COMMENT 'Nom / intitulé de la tâche',

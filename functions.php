@@ -1,32 +1,32 @@
 <?php
 /**
- * functions.php — Fonctions métier de myDailyTasks
+ * functions.php — Business logic for myDailyTasks
  *
- * Contient :
- *  - db_connect()      : connexion PDO à la base de données
- *  - get_tasks_list()  : récupère les tâches d'une date donnée
- *  - create_task()     : insère une nouvelle tâche
- *  - edit_task()       : modifie une tâche existante
- *  - delete_task()     : supprime une tâche
- *  - get_task_by_id()  : récupère une tâche par son identifiant
+ * Contains:
+ *  - db_connect()      : PDO database connection
+ *  - get_tasks_list()  : retrieve all tasks for a given date
+ *  - create_task()     : insert a new task
+ *  - edit_task()       : update an existing task
+ *  - delete_task()     : delete a task
+ *  - get_task_by_id()  : retrieve a single task by its ID
  */
 
 require_once __DIR__ . '/config.php';
 
 // ════════════════════════════════════════════════════════════
-// Connexion
+// Connection
 // ════════════════════════════════════════════════════════════
 
 /**
- * Établit et retourne une connexion PDO à la base de données.
+ * Establishes and returns a PDO connection to the database.
  *
- * La connexion est configurée pour :
- *  - lever des exceptions en cas d'erreur (ERRMODE_EXCEPTION)
- *  - retourner les résultats sous forme de tableaux associatifs
- *  - ne PAS émuler les requêtes préparées (sécurité accrue)
+ * The connection is configured to:
+ *  - throw exceptions on error (ERRMODE_EXCEPTION)
+ *  - return results as associative arrays
+ *  - disable emulated prepared statements (better security)
  *
- * @return PDO Instance de connexion à la base de données.
- * @throws PDOException Si la connexion échoue.
+ * @return PDO Database connection instance.
+ * @throws PDOException If the connection fails.
  */
 function db_connect(): PDO
 {
@@ -47,15 +47,14 @@ function db_connect(): PDO
 }
 
 // ════════════════════════════════════════════════════════════
-// Lecture
+// Read
 // ════════════════════════════════════════════════════════════
 
 /**
- * Retourne la liste de toutes les tâches pour une date donnée,
- * triées de la plus récente à la plus ancienne (par task_id DESC).
+ * Returns all tasks for a given date, sorted from newest to oldest.
  *
- * @param string $date Date au format 'Y-m-d'.
- * @return array       Tableau associatif des tâches trouvées.
+ * @param string $date Date in 'Y-m-d' format.
+ * @return array       Associative array of tasks.
  */
 function get_tasks_list(string $date): array
 {
@@ -73,10 +72,10 @@ function get_tasks_list(string $date): array
 }
 
 /**
- * Retourne une tâche unique identifiée par son ID.
+ * Returns a single task identified by its ID.
  *
- * @param int $task_id Identifiant de la tâche.
- * @return array|false Tableau associatif de la tâche, ou false si introuvable.
+ * @param int $task_id Task identifier.
+ * @return array|false Associative array of the task, or false if not found.
  */
 function get_task_by_id(int $task_id): array|false
 {
@@ -94,16 +93,16 @@ function get_task_by_id(int $task_id): array|false
 }
 
 // ════════════════════════════════════════════════════════════
-// Création
+// Create
 // ════════════════════════════════════════════════════════════
 
 /**
- * Insère une nouvelle tâche en base de données.
+ * Inserts a new task into the database.
  *
- * @param string $name     Nom de la tâche (max 255 caractères).
- * @param int    $duration Durée en minutes (multiple de TASK_DURATION_STEP).
- * @param string $date     Date au format 'Y-m-d'.
- * @return bool            true si l'insertion a réussi, false sinon.
+ * @param string $name     Task name (max 255 characters).
+ * @param int    $duration Duration in minutes (multiple of TASK_DURATION_STEP).
+ * @param string $date     Date in 'Y-m-d' format.
+ * @return bool            true if insertion succeeded, false otherwise.
  */
 function create_task(string $name, int $duration, string $date): bool
 {
@@ -122,26 +121,26 @@ function create_task(string $name, int $duration, string $date): bool
 }
 
 // ════════════════════════════════════════════════════════════
-// Modification
+// Update
 // ════════════════════════════════════════════════════════════
 
 /**
- * Modifie tout ou partie des informations d'une tâche existante.
+ * Updates some or all fields of an existing task.
  *
- * Seuls les champs fournis dans $fields sont mis à jour.
- * Les clés autorisées sont : 'name', 'duration', 'date'.
+ * Only fields provided in $fields are updated.
+ * Allowed keys are: 'name', 'duration', 'date'.
  *
- * @param int   $task_id Identifiant de la tâche à modifier.
- * @param array $fields  Tableau associatif ['colonne' => 'valeur'].
- * @return bool          true si la mise à jour a réussi, false sinon.
- * @throws InvalidArgumentException Si aucun champ valide n'est fourni.
+ * @param int   $task_id Task identifier.
+ * @param array $fields  Associative array ['column' => 'value'].
+ * @return bool          true if update succeeded, false otherwise.
+ * @throws InvalidArgumentException If no valid field is provided.
  */
 function edit_task(int $task_id, array $fields): bool
 {
-    // Colonnes autorisées à la modification (liste blanche)
+    // Whitelist of columns allowed for update
     $allowed_columns = ['name', 'duration', 'date'];
 
-    // Filtrage : on ne conserve que les clés autorisées
+    // Filter: keep only allowed keys
     $filtered = array_filter(
         $fields,
         fn($key) => in_array($key, $allowed_columns, true),
@@ -150,11 +149,11 @@ function edit_task(int $task_id, array $fields): bool
 
     if (empty($filtered)) {
         throw new \InvalidArgumentException(
-            'edit_task() : aucun champ valide fourni pour la mise à jour.'
+            'edit_task(): no valid field provided for update.'
         );
     }
 
-    // Construction dynamique des clauses SET
+    // Dynamically build SET clauses
     $set_clauses = implode(
         ', ',
         array_map(fn($col) => "`$col` = :$col", array_keys($filtered))
@@ -165,10 +164,10 @@ function edit_task(int $task_id, array $fields): bool
     $sql  = "UPDATE tasks SET $set_clauses WHERE task_id = :task_id";
     $stmt = $pdo->prepare($sql);
 
-    // Ajout de l'identifiant aux paramètres
+    // Add the task ID to the parameters
     $filtered[':task_id'] = $task_id;
 
-    // Préfixage des clés avec ':'
+    // Prefix keys with ':'
     $params = [];
     foreach ($filtered as $key => $value) {
         $params_key          = str_starts_with($key, ':') ? $key : ":$key";
@@ -179,14 +178,14 @@ function edit_task(int $task_id, array $fields): bool
 }
 
 // ════════════════════════════════════════════════════════════
-// Suppression
+// Delete
 // ════════════════════════════════════════════════════════════
 
 /**
- * Supprime une tâche de la base de données.
+ * Deletes a task from the database.
  *
- * @param int $task_id Identifiant de la tâche à supprimer.
- * @return bool        true si la suppression a réussi, false sinon.
+ * @param int $task_id Task identifier.
+ * @return bool        true if deletion succeeded, false otherwise.
  */
 function delete_task(int $task_id): bool
 {
@@ -199,15 +198,15 @@ function delete_task(int $task_id): bool
 }
 
 // ════════════════════════════════════════════════════════════
-// Utilitaires
+// Utilities
 // ════════════════════════════════════════════════════════════
 
 /**
- * Nettoie et valide une chaîne de caractères saisie par l'utilisateur.
+ * Sanitizes a user-submitted string.
  *
- * @param string $input   Valeur brute du champ formulaire.
- * @param int    $max_len Longueur maximale autorisée.
- * @return string         Chaîne nettoyée et tronquée.
+ * @param string $input   Raw form field value.
+ * @param int    $max_len Maximum allowed length.
+ * @return string         Cleaned and truncated string.
  */
 function sanitize_string(string $input, int $max_len = 255): string
 {
@@ -218,10 +217,10 @@ function sanitize_string(string $input, int $max_len = 255): string
 }
 
 /**
- * Valide une durée : doit être un entier positif, multiple de
- * TASK_DURATION_STEP, compris entre TASK_DURATION_MIN et TASK_DURATION_MAX.
+ * Validates a duration value: must be a positive integer, a multiple of
+ * TASK_DURATION_STEP, between TASK_DURATION_MIN and TASK_DURATION_MAX.
  *
- * @param mixed $duration Valeur à valider.
+ * @param mixed $duration Value to validate.
  * @return bool
  */
 function validate_duration(mixed $duration): bool
@@ -238,9 +237,9 @@ function validate_duration(mixed $duration): bool
 }
 
 /**
- * Valide une date au format 'Y-m-d'.
+ * Validates a date string in 'Y-m-d' format.
  *
- * @param string $date Valeur à valider.
+ * @param string $date Value to validate.
  * @return bool
  */
 function validate_date(string $date): bool

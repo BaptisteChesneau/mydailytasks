@@ -26,71 +26,71 @@ Application de time tracking quotidien développée en HTML, CSS, PHP et SQL dan
 
 ## Installation
 
-### 1. Cloner le dépôt
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/BaptisteChesneau/mydailytasks.git
 ```
 
-### 2. Placer le dossier dans le répertoire de votre serveur local
+### 2. Place the folder in your local server directory
 
 ```
 C:/xampp/htdocs/mydailytasks/
 ```
 
-### 3. Importer la base de données
+### 3. Import the database
 
 Via phpMyAdmin :
 - Ouvrir `http://localhost/phpmyadmin`
 - Onglet **Importer** → sélectionner `sql/mydailytasks.sql`
 - Cliquer **Exécuter**
 
-Ou en ligne de commande :
+Or via command line:
 
 ```bash
 mysql -u root -p < sql/mydailytasks.sql
 ```
 
-### 4. Configurer la connexion à la base de données
+### 4. Configure the database connection
 
-Copier le fichier exemple et renseigner vos identifiants :
+Copy the example file and fill in your credentials:
 
 ```bash
 cp config.example.php config.php
 ```
 
-Ouvrir `config.php` et modifier les valeurs suivantes :
+Open `config.php` and update the following values:
 
 ```php
-define('DB_USER', 'votre_utilisateur');
-define('DB_PASS', 'votre_mot_de_passe');
+define('DB_USER', 'your_username');
+define('DB_PASS', 'your_password');
 ```
 
-### 5. Lancer l'application
+### 5. Run the application
 
-Démarrer Apache et MySQL depuis le panneau de contrôle XAMPP puis ouvrir :
+Start Apache and MySQL from the XAMPP control panel then open:
 
 ```
 http://localhost/mydailytasks/
 ```
 
-## Structure du projet
+## Project structure
 
 ```
 mydailytasks/
 ├── css/
-│   └── style.css         # Feuille de styles responsive
+│   └── style.css         # Responsive stylesheet
 ├── sql/
-│   └── mydailytasks.sql  # Script de création de la BDD
-├── config.example.php    # Modèle de configuration (à copier en config.php)
-├── edit_task.php         # Création et modification d'une tâche
-├── functions.php         # Fonctions PDO (connexion, CRUD, validation)
-└── index.php             # Tableau de bord principal
+│   └── mydailytasks.sql  # Database creation script
+├── config.example.php    # Configuration template (copy to config.php)
+├── edit_task.php         # Task creation and editing screen
+├── functions.php         # PDO functions (connection, CRUD, validation)
+└── index.php             # Main dashboard
 ```
 
-## Sécurité
+## Security
 
-- Requêtes SQL préparées via PDO (protection contre les injections SQL)
-- Nettoyage et validation de toutes les entrées formulaire
-- `config.php` exclu du dépôt Git via `.gitignore`
-- Pattern PRG (Post/Redirect/Get) pour éviter la re-soumission des formulaires
+- Prepared SQL statements via PDO (protection against SQL injection)
+- Sanitization and validation of all form inputs
+- `config.php` excluded from Git repository via `.gitignore`
+- PRG pattern (Post/Redirect/Get) to prevent form re-submission
