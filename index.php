@@ -13,16 +13,28 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/functions.php';
 
-// ── Task deletion ────────────────────────────────────────────
+// ── Flash messages (success / deletion) ──────────────────────
 $flash_message = '';
 $flash_type    = '';
 
+// Success message after task creation or edit
+if (isset($_GET['success'])) {
+    if ($_GET['success'] === 'created') {
+        $flash_message = '✅ Tâche créée avec succès !';
+        $flash_type    = 'success';
+    } elseif ($_GET['success'] === 'edited') {
+        $flash_message = '✅ Tâche modifiée avec succès !';
+        $flash_type    = 'success';
+    }
+}
+
+// ── Task deletion ────────────────────────────────────────────
 if (isset($_GET['delete']) && ctype_digit($_GET['delete'])) {
     $task_id_to_delete = (int) $_GET['delete'];
 
     try {
         if (delete_task($task_id_to_delete)) {
-            $flash_message = 'La tâche a bien été supprimée.';
+            $flash_message = '🗑 Tâche supprimée avec succès.';
             $flash_type    = 'success';
         } else {
             $flash_message = 'Impossible de supprimer cette tâche.';
