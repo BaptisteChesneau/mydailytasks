@@ -172,7 +172,7 @@ $page_title = $edit_mode ? 'Modifier une tâche' : 'Nouvelle tâche';
                         class="form-control"
                         value="<?= htmlspecialchars($form['name'], ENT_QUOTES, 'UTF-8') ?>"
                         placeholder="Ex : Revue de code, Réunion client…"
-                        maxlength="255"
+                        maxlength="30"
                         required
                         aria-describedby="<?= isset($errors['name']) ? 'name-error' : '' ?>"
                         aria-invalid="<?= isset($errors['name']) ? 'true' : 'false' ?>">
